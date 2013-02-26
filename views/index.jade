@@ -1,0 +1,58 @@
+extends layout
+
+block head
+  link(rel='stylesheet', href='/css/site.css')
+
+block content
+  .container-fluid
+    .row-fluid
+      .span3
+      .span6
+        h1 Infinite Scoller Test Page
+      .span3
+    .row-fluid
+      .span3
+      .span3.scroll-container
+        table.table.table-bordered
+          tbody(data-bind='foreach: rows')
+            tr
+              td(data-bind='text: number')
+              td(data-bind='text: description')
+      .span6
+        form.form-search
+          input(type='text', data-bind='value: searchText').input-medium.search-query 
+          button(data-bind='click: resetScroll').btn Apply Filter
+
+  script(src='/js/jquery.js')
+  script(src='/js/knockout.js')  
+  script(src='/js/jquery.infiniteScroll.js')
+  script
+    $(function() {
+
+      function ViewModel() {
+        var that = this;
+        that.searchText = ko.observable();
+        that.rows = ko.observableArray([]);
+
+        that.getFilterValues = function() {
+          return [ { key : 'searchText', value : that.searchText() } ] 
+        };
+  
+        that.appendData = function(newRows) {
+          newRows.forEach(function(row) {
+            that.rows.push(row);
+          });
+        };
+
+        that.resetScroll = $('table').infiniteScroll('fetchrows', that.getFilterValues, that.appendData, {
+          scrollViewport: '.scroll-container',
+          startFetchThresholdRows: 5,
+          clearData: function() { that.rows.removeAll(); }
+        }).resetInfiniteScroll;
+      };
+
+      var vm = new ViewModel();
+      ko.applyBindings(vm);
+
+      vm.resetScroll();
+    });
